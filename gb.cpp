@@ -2,6 +2,8 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include <locale.h>
+	#include <ctype.h>
+	#include <conio.h>
 	
 	#define MAX 100
 	
@@ -9,6 +11,7 @@
 	typedef struct {
 	    int id;
 	    char doador[50];
+	    char cat;
 	    char item[50];
 	    int quantidade;
 	    char data[11];
@@ -154,28 +157,47 @@
 	}
 	
 	void cadastrarDoacao() {
-	    FILE *fp;
-		fp = fopen("ARQ_DOACOES", "a");
-	    if (!fp) { 
+		char op;
+		do{
+		    FILE *fp;
+			fp = fopen("ARQ_DOACOES", "a");
+		    if (!fp) { 
 			printf("Erro ao abrir arquivo de doações!\n"); return;
 			}
-	
-	    Doacao d;
-	    fflush(stdin);
-	    printf("\nNome do doador: ");
-		gets(d.doador);
-	    printf("Item doado: "); 
-		gets(d.item);
-	    printf("Quantidade: "); 
-		scanf("%d", &d.quantidade);
-		fflush(stdin);
-	    printf("Data (dd/mm/aaaa): "); 
-		gets(d.data);
-	
-	    fprintf(fp, "%s|%s|%d|%s\n", d.doador, d.item, d.quantidade, d.data);
-	    fclose(fp);
-	    printf("Doação registrada com sucesso!\n");
-	    getchar();
+			Doacao d;
+		    fflush(stdin);
+		    printf("\nNome do doador: ");
+			gets(d.doador);
+			printf("\nCategoria do objeto: ");
+			printf("\n(C - Comida | H - Higiene | R - Roupas )\n");
+			do{
+			d.cat = toupper(getche());
+			if(d.cat != 'C' && d.cat != 'H' && d.cat != 'R'){
+				printf("\nCategoria inválida, favor redigite.");
+				printf("\n(C - Comida | H - Higiene | R - Roupas )\n");
+			}
+			}while (d.cat != 'C' && d.cat != 'H' && d.cat != 'R');
+			
+		    printf("\nItem doado: "); 
+			gets(d.item);
+		    printf("Quantidade: "); 
+			scanf("%d", &d.quantidade);
+			fflush(stdin);
+		    printf("Data (dd/mm/aaaa): "); 
+			gets(d.data);
+		    fprintf(fp, "Nome: %s|Categoria: %c|Item: %s|Qtd: %d|Data: %s\n", d.doador, d.cat, d.item, d.quantidade, d.data);
+		    fclose(fp);
+		    printf("Doação registrada com sucesso!\n");
+		    do{
+		    	printf("\nGostaria de cadastrar outra doação? S/N\n");
+		    	op = toupper(getche());
+		    if(op != 'S' && op != 'N'){
+		    	printf("\nCaractere inválido, favor redigite.");
+		    	printf("\nGostaria de cadastrar outra doação? S/N\n");
+			}
+			}while(op != 'S' && op != 'N');
+		}while(op != 'N');
+	    
 	}
 	
 	void listarDoacoes() {
@@ -197,25 +219,36 @@
 	}
 	
 	void cadastrarVoluntario() {
-	    FILE *fp;
-		fp = fopen("ARQ_VOLUNTARIOS", "a");
-	    if (!fp) { 
-		printf("Erro ao abrir arquivo de voluntários!\n"); 
-		return; 
-		}
-	
-	    Voluntario v;
-	    fflush(stdin);
-	    printf("\nNome: "); 
-		gets(v.nome);
-	    printf("Habilidades: "); 
-		gets(v.habilidades);
-	    printf("Disponibilidade: "); 
-		gets(v.disponibilidade);
-	
-	    fprintf(fp, "%s|%s|%s\n", v.nome, v.habilidades, v.disponibilidade);
-	    fclose(fp);
-	    printf("Voluntário cadastrado com sucesso!\n");
+		char op;
+		do{
+		    FILE *fp;
+			fp = fopen("ARQ_VOLUNTARIOS", "a");
+		    if (!fp) { 
+			printf("Erro ao abrir arquivo de voluntários!\n"); 
+			return; 
+			}
+		
+		    Voluntario v;
+		    fflush(stdin);
+		    printf("\nNome: "); 
+			gets(v.nome);
+		    printf("Habilidades: "); 
+			gets(v.habilidades);
+		    printf("Disponibilidade: "); 
+			gets(v.disponibilidade);
+		
+		    fprintf(fp, "Nome: %s|Habilidade: %s|Disponibilidade: %s\n", v.nome, v.habilidades, v.disponibilidade);
+		    fclose(fp);
+		    printf("Voluntário cadastrado com sucesso!\n");
+			do{
+		    	printf("\nGostaria de cadastrar outro voluntário? S/N\n");
+		    	op = toupper(getche());
+		    if(op != 'S' && op != 'N'){
+		    	printf("\nCaractere inválido, favor redigite.");
+		    	printf("\nGostaria de cadastrar outro voluntário? S/N\n");
+			}
+			}while(op != 'S' && op != 'N');
+		}while(op != 'N');
 	}
 	
 	void listarVoluntarios() {
@@ -235,6 +268,8 @@
 	}
 	
 	void cadastrarNecessidade() {
+		char op;
+		do{
 	    FILE *fp;
 		fp = fopen("ARQ_NECESSIDADES", "a");
 	    if (!fp) { 
@@ -259,6 +294,15 @@
 	    fprintf(fp, "Item: %s|Quantidade: %d|Urgência: %d\n", n.item, n.quantidade_necessaria, n.urgencia);
 	    fclose(fp);
 	    printf("Necessidade cadastrada com sucesso!\n");
+		do{
+		    	printf("\nGostaria de cadastrar outra necessidade? S/N\n");
+		    	op = toupper(getche());
+		    if(op != 'S' && op != 'N'){
+		    	printf("\nCaractere inválido, favor redigite.");
+		    	printf("\nGostaria de cadastrar outra necessidade? S/N\n");
+			}
+			}while(op != 'S' && op != 'N');
+		}while(op != 'N');
 	}
 	
 	void listarNecessidades() {
