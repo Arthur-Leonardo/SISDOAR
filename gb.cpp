@@ -9,7 +9,6 @@
 	
 	// Estruturas principais
 	typedef struct {
-	    int id;
 	    char doador[50];
 	    char cat;
 	    char item[50];
@@ -18,14 +17,13 @@
 	} Doacao;
 	
 	typedef struct {
-	    int id;
 	    char nome[50];
-	    char habilidades[100];
-	    char disponibilidade[30];
+	    char funcao;
+	    char disponibilidade;
 	} Voluntario;
 	
 	typedef struct {
-	    int id;
+	    char categoria;
 	    char item[50];
 	    int quantidade_necessaria;
 	    int urgencia;
@@ -44,6 +42,8 @@
 	// Funções de voluntários
 	void cadastrarVoluntario();
 	void listarVoluntarios();
+	void defFuncao();
+	void defDisponibilidade();
 	
 	// Funções de necessidades
 	void cadastrarNecessidade();
@@ -57,7 +57,8 @@
 	
 	void menuPrincipal() {
 	    int opcao;
-	    do {	
+	    do {
+	    	system("cls");
 	        printf("\n===== SISDOAR - Sistema de Gestão de Doações =====\n");
 	        printf("1. Gerenciar Doações\n");
 	        printf("2. Gerenciar Voluntários\n");
@@ -123,7 +124,7 @@
 				cadastrarVoluntario(); 
 					break;
 	            case 2: 
-				listarVoluntarios(); 
+				listarVoluntarios();
 					break;
 	            case 0: 
 					break;
@@ -197,7 +198,7 @@
 			}
 			}while(op != 'S' && op != 'N');
 		}while(op != 'N');
-	    
+	    system("cls");
 	}
 	
 	void listarDoacoes() {
@@ -219,7 +220,7 @@
 	}
 	
 	void cadastrarVoluntario() {
-		char op;
+		char op, op2;
 		do{
 		    FILE *fp;
 			fp = fopen("ARQ_VOLUNTARIOS", "a");
@@ -232,14 +233,28 @@
 		    fflush(stdin);
 		    printf("\nNome: "); 
 			gets(v.nome);
-		    printf("Habilidades: "); 
-			gets(v.habilidades);
-		    printf("Disponibilidade: "); 
-			gets(v.disponibilidade);
-		
-		    fprintf(fp, "Nome: %s|Habilidade: %s|Disponibilidade: %s\n", v.nome, v.habilidades, v.disponibilidade);
-		    fclose(fp);
-		    printf("Voluntário cadastrado com sucesso!\n");
+			fflush(stdin);
+			fprintf(fp, "Nome: %s|Função: ", v.nome);
+			fclose(fp);
+			do{
+				defFuncao();
+				do{
+					printf("\nFunção registrada com sucesso, gostaria de registrar outra? (S/N)\n");
+					op2 = toupper(getche());
+					fflush(stdin);
+					if(op2 != 'S' && op2 != 'N'){
+				    	printf("\nCaractere inválido, favor redigite.");
+				    	printf("\nGostaria de cadastrar outra doação? S/N\n");
+					}
+				}while(op2 != 'S' && op2 != 'N');
+				if(op2 == 'S'){
+					fp = fopen("ARQ_VOLUNTARIOS", "a");
+					fprintf(fp, "/");
+					fclose(fp);
+				}
+			}while(op2 != 'N');
+			defDisponibilidade();
+		    printf("\nVoluntário cadastrado com sucesso!\n");
 			do{
 		    	printf("\nGostaria de cadastrar outro voluntário? S/N\n");
 		    	op = toupper(getche());
@@ -249,6 +264,7 @@
 			}
 			}while(op != 'S' && op != 'N');
 		}while(op != 'N');
+		system("cls");
 	}
 	
 	void listarVoluntarios() {
@@ -279,9 +295,20 @@
 	
 	    Necessidade n;
 	    fflush(stdin);
-	    printf("\nItem necessário: "); 
+	    printf("\nCategoria em falta: "); 
+	    printf("\n(C - Comida | H - Higiene | R - Roupas )\n");
+			do{
+			n.categoria = toupper(getche());
+			if(n.categoria != 'C' && n.categoria != 'H' && n.categoria != 'R'){
+				printf("\nCategoria inválida, favor redigite.");
+				printf("\n(C - Comida | H - Higiene | R - Roupas )\n");
+			}
+			}while (n.categoria != 'C' && n.categoria != 'H' && n.categoria != 'R');
+		escCategoria(fp);
+		fflush(stdin);
+		printf("\nItem: ");
 		gets(n.item);
-	    printf("Quantidade: "); 
+	    printf("\nQuantidade: "); 
 		scanf("%d", &n.quantidade_necessaria);
 		do{
 		    printf("Urgência (1-5): "); 
@@ -291,18 +318,19 @@
 			}
 		}while(n.urgencia < 1 || n.urgencia > 5);
 	
-	    fprintf(fp, "Item: %s|Quantidade: %d|Urgência: %d\n", n.item, n.quantidade_necessaria, n.urgencia);
+	    fprintf(fp, "Categoria: %c|Item: %s|Quantidade: %d|Urgência: %d\n", n.categoria, n.item, n.quantidade_necessaria, n.urgencia);
 	    fclose(fp);
 	    printf("Necessidade cadastrada com sucesso!\n");
 		do{
-		    	printf("\nGostaria de cadastrar outra necessidade? S/N\n");
-		    	op = toupper(getche());
+		    printf("\nGostaria de cadastrar outra necessidade? S/N\n");
+		    op = toupper(getche());
 		    if(op != 'S' && op != 'N'){
 		    	printf("\nCaractere inválido, favor redigite.");
 		    	printf("\nGostaria de cadastrar outra necessidade? S/N\n");
 			}
 			}while(op != 'S' && op != 'N');
 		}while(op != 'N');
+		system("cls");
 	}
 	
 	void listarNecessidades() {
@@ -321,3 +349,87 @@
 	    fclose(fp);
 	}
 
+
+	void defFuncao(){
+		FILE *fp;
+		fp = fopen("ARQ_VOLUNTARIOS", "a");
+		if (!fp){
+		printf("Erro ao abrir o arquivo de voluntários\n"); 
+		return; 
+		}
+		Voluntario v;
+		printf("\nFunção: "); 
+		printf("\nD - Direção | B - Trabalho braçal | G - Gestão de Doações | A - Atendimento | C - Comunicação\n");
+			do{
+				v.funcao = toupper(getche());
+				fflush(stdin);
+				if(v.funcao != 'D' && v.funcao != 'B' && v.funcao != 'G' && v.funcao != 'A' && v.funcao != 'C'){
+					printf("\nCategoria inválida, favor redigite.");
+					printf("\n\nD - Direção | B - Trabalho braçal | G - Gestão de Doações | A - Atendimento | C - Comunicação\n");
+					}
+				switch(v.funcao){
+					case 'D':
+						fprintf(fp, "Direção");
+						break;
+					case 'B':
+						fprintf(fp, "Braçal");
+						break;
+					case 'G':
+						fprintf(fp, "Gestão");
+						break;
+					case 'A':
+						fprintf(fp, "Atendimento");
+						break;
+					case 'C':
+						fprintf(fp, "Comunicação");
+						break;
+					}
+				}while (v.funcao != 'D' && v.funcao != 'B' && v.funcao != 'G' && v.funcao != 'A' && v.funcao != 'C');
+			fclose(fp);
+		}
+	
+	void defDisponibilidade(){
+		FILE *fp;
+		fp = fopen("ARQ_VOLUNTARIOS", "a");
+		if (!fp){
+		printf("Erro ao abrir o arquivo de voluntários\n"); 
+		return; 
+		}
+		Voluntario v;
+		fprintf(fp, "|Disponibilidade: ");
+		printf("\nDisponibilidade: "); 
+		printf("\nD - Diariamente | F - Final de Semana | U - Dias úteis | I - Indefinido\n");
+			do{
+				v.disponibilidade = toupper(getche());
+				fflush(stdin);
+				if(v.disponibilidade != 'D' && v.disponibilidade != 'F' && v.disponibilidade != 'U' && v.disponibilidade != 'I'){
+					printf("\nCaracter inválido, favor redigite.");
+					printf("\nD - Diariamente | F - Final de Semana | U - Dias úteis | I - Indefinido\n");
+					}
+				switch(v.disponibilidade){
+					case 'D':
+						fprintf(fp, "Diariamente");
+						break;
+					case 'F':
+						fprintf(fp, "Final de Semana");
+						break;
+					case 'U':
+						fprintf(fp, "Dias Úteis");
+						break;
+					case 'I':
+						fprintf(fp, "Indefinido");
+					}
+				}while (v.disponibilidade != 'D' && v.disponibilidade != 'F' && v.disponibilidade != 'U' && v.disponibilidade != 'I');
+				fprintf(fp, "\n");
+			fclose(fp);
+	}
+	
+	void escCategorias(arq){
+		FILE *fp;
+		fp = fopen(arq, "a");
+		if (!fp){
+		printf("Erro ao abrir o arquivo de voluntários\n"); 
+		return; 
+		}
+		
+	}
