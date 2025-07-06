@@ -5,9 +5,7 @@
 	#include <ctype.h>
 	#include <conio.h>
 	
-	#define MAX 100
-	
-	// Estruturas principais
+	//Estruturas principais
 	typedef struct {
 	    char doador[50];
 	    char cat;
@@ -29,25 +27,28 @@
 	    int urgencia;
 	} Necessidade;
 	
-	// Prototipos de funções
+	//Prototipos de funções
 	void menuPrincipal();
 	void menuDoacoes();
 	void menuVoluntarios();
 	void menuNecessidades();
 	
-	// Funções de doações
+	//Funções de doações
 	void cadastrarDoacao();
 	void listarDoacoes();
 	
-	// Funções de voluntários
+	//Funções de voluntários
 	void cadastrarVoluntario();
 	void listarVoluntarios();
-	void defFuncao();
+	int defFuncao(int fcheck[]);
 	void defDisponibilidade();
 	
-	// Funções de necessidades
+	//Funções de necessidades
 	void cadastrarNecessidade();
 	void listarNecessidades();
+	
+	//Função de estatística
+	void mostrarEstatisticas();
 	
 	int main() {
 		setlocale(LC_ALL,"Portuguese_Brazil");
@@ -63,6 +64,7 @@
 	        printf("1. Gerenciar Doações\n");
 	        printf("2. Gerenciar Voluntários\n");
 	        printf("3. Gerenciar Necessidades\n");
+	        printf("4. Estatísticas Gerais\n");
 	        printf("0. Sair\n");
 	        printf("Escolha uma opção: ");
 	        scanf("%d", &opcao);
@@ -77,6 +79,9 @@
 	            case 3: 
 				menuNecessidades(); 
 					break;
+				case 4:
+ 			    mostrarEstatisticas();
+    			break;
 	            case 0: 
 				printf("Saindo do sistema...\n"); 
 					break;
@@ -161,7 +166,7 @@
 		char op;
 		do{
 		    FILE *fp;
-			fp = fopen("ARQ_DOACOES", "a");
+			fp = fopen("ARQ_DOACOES.txt", "a");
 		    if (!fp) { 
 			printf("Erro ao abrir arquivo de doações!\n"); return;
 			}
@@ -203,7 +208,7 @@
 	
 	void listarDoacoes() {
 	    FILE *fp;
-		fp = fopen("ARQ_DOACOES", "r");
+		fp = fopen("ARQ_DOACOES.txt", "r");
 	    if (!fp) { 
 		printf("Nenhuma doação encontrada.\n"); 
 		return; 
@@ -222,8 +227,9 @@
 	void cadastrarVoluntario() {
 		char op, op2;
 		do{
+			int fcheck[5] = {0};
 		    FILE *fp;
-			fp = fopen("ARQ_VOLUNTARIOS", "a");
+			fp = fopen("ARQ_VOLUNTARIOS.txt", "a");
 		    if (!fp) { 
 			printf("Erro ao abrir arquivo de voluntários!\n"); 
 			return; 
@@ -237,7 +243,7 @@
 			fprintf(fp, "Nome: %s|Função: ", v.nome);
 			fclose(fp);
 			do{
-				defFuncao();
+				int registrada = defFuncao(fcheck);
 				do{
 					printf("\nFunção registrada com sucesso, gostaria de registrar outra? (S/N)\n");
 					op2 = toupper(getche());
@@ -247,8 +253,8 @@
 				    	printf("\nGostaria de cadastrar outra doação? S/N\n");
 					}
 				}while(op2 != 'S' && op2 != 'N');
-				if(op2 == 'S'){
-					fp = fopen("ARQ_VOLUNTARIOS", "a");
+				if(op2 == 'S' && registrada){
+					FILE *fp = fopen("ARQ_VOLUNTARIOS.txt", "a");
 					fprintf(fp, "/");
 					fclose(fp);
 				}
@@ -269,7 +275,7 @@
 	
 	void listarVoluntarios() {
 	    FILE *fp;
-		fp = fopen("ARQ_VOLUNTARIOS", "r");
+		fp = fopen("ARQ_VOLUNTARIOS.txt", "r");
 	    if (!fp) { 
 		printf("Nenhum voluntário encontrado.\n"); 
 		return; 
@@ -287,7 +293,7 @@
 		char op;
 		do{
 	    FILE *fp;
-		fp = fopen("ARQ_NECESSIDADES", "a");
+		fp = fopen("ARQ_NECESSIDADES.txt", "a");
 	    if (!fp) { 
 		printf("Erro ao abrir arquivo de necessidades!\n"); 
 		return; 
@@ -304,7 +310,6 @@
 				printf("\n(C - Comida | H - Higiene | R - Roupas )\n");
 			}
 			}while (n.categoria != 'C' && n.categoria != 'H' && n.categoria != 'R');
-		escCategoria(fp);
 		fflush(stdin);
 		printf("\nItem: ");
 		gets(n.item);
@@ -335,7 +340,7 @@
 	
 	void listarNecessidades() {
 	    FILE *fp;
-		fp = fopen("ARQ_NECESSIDADES", "r");
+		fp = fopen("ARQ_NECESSIDADES.txt", "r");
 	    if (!fp){
 		printf("Nenhuma necessidade encontrada.\n"); 
 		return; 
@@ -350,12 +355,12 @@
 	}
 
 
-	void defFuncao(){
+	int defFuncao(int fcheck[]){
 		FILE *fp;
-		fp = fopen("ARQ_VOLUNTARIOS", "a");
+		fp = fopen("ARQ_VOLUNTARIOS.txt", "a");
 		if (!fp){
 		printf("Erro ao abrir o arquivo de voluntários\n"); 
-		return; 
+		return 0; 
 		}
 		Voluntario v;
 		printf("\nFunção: "); 
@@ -367,30 +372,62 @@
 					printf("\nCategoria inválida, favor redigite.");
 					printf("\n\nD - Direção | B - Trabalho braçal | G - Gestão de Doações | A - Atendimento | C - Comunicação\n");
 					}
-				switch(v.funcao){
-					case 'D':
+			}while (v.funcao != 'D' && v.funcao != 'B' && v.funcao != 'G' && v.funcao != 'A' && v.funcao != 'C');
+			int registrada = 0;
+			switch(v.funcao){
+				case 'D':
+					if(fcheck[0] != 0){
+						printf("\nEssa função já foi cadastrada!");
+					}else{
 						fprintf(fp, "Direção");
-						break;
-					case 'B':
-						fprintf(fp, "Braçal");
-						break;
-					case 'G':
-						fprintf(fp, "Gestão");
-						break;
-					case 'A':
-						fprintf(fp, "Atendimento");
-						break;
-					case 'C':
-						fprintf(fp, "Comunicação");
-						break;
+						fcheck[0] = 1;
+						registrada = 1;
 					}
-				}while (v.funcao != 'D' && v.funcao != 'B' && v.funcao != 'G' && v.funcao != 'A' && v.funcao != 'C');
-			fclose(fp);
+					break;
+				case 'B':
+					if(fcheck[1] != 0){
+					printf("\nEssa função já foi cadastrada!");
+					}else{
+					fprintf(fp, "Braçal");
+					fcheck[1] = 1;
+					registrada = 1;
+					}
+					break;
+				case 'G':
+					if(fcheck[2] != 0){
+					printf("\nEssa função já foi cadastrada!");
+					}else{
+					fprintf(fp, "Gestão");
+					fcheck[2] = 1;
+					registrada = 1;
+					}
+					break;
+				case 'A':
+					if(fcheck[3] != 0){
+					printf("\nEssa função já foi cadastrada!");
+					}else{
+					fprintf(fp, "Atendimento");
+					fcheck[3] = 1;
+					registrada = 1;
+					}
+					break;
+				case 'C':
+					if(fcheck[4] != 0){
+					printf("\nEssa função já foi cadastrada!");
+					}else{
+					fprintf(fp, "Comunicação");
+					fcheck[4] = 1;
+					registrada = 1;
+					}
+					break;
+				}
+		fclose(fp);
+		return registrada;
 		}
 	
 	void defDisponibilidade(){
 		FILE *fp;
-		fp = fopen("ARQ_VOLUNTARIOS", "a");
+		fp = fopen("ARQ_VOLUNTARIOS.txt", "a");
 		if (!fp){
 		printf("Erro ao abrir o arquivo de voluntários\n"); 
 		return; 
@@ -424,12 +461,113 @@
 			fclose(fp);
 	}
 	
-	void escCategorias(arq){
-		FILE *fp;
-		fp = fopen(arq, "a");
-		if (!fp){
-		printf("Erro ao abrir o arquivo de voluntários\n"); 
-		return; 
-		}
-		
-	}
+	void mostrarEstatisticas() {
+    printf("\n==== ESTATÍSTICAS GERAIS ====\n");
+    FILE *fp = fopen("ARQ_DOACOES.txt", "r");
+    int totalDoacoes = 0, cat_doacoes[3] = {0};
+    char linha[200];
+
+    if (fp) {
+        while (fgets(linha, sizeof(linha), fp)) {
+            totalDoacoes++;
+            if (strstr(linha, "Categoria: C")) {
+			cat_doacoes[0]++;
+			}
+            else if (strstr(linha, "Categoria: H")) {
+			cat_doacoes[1]++;
+			}
+            else if (strstr(linha, "Categoria: R")) {
+			cat_doacoes[2]++;
+			}
+        }
+        fclose(fp);
+    }
+
+    printf("\nDOAÇÕES:\n");
+    printf("Total de Doações: %d\n", totalDoacoes);
+    if (totalDoacoes > 0) {
+        printf("Comida: %d (%.2f%%)\n", cat_doacoes[0], (cat_doacoes[0]*100.0)/totalDoacoes);
+        printf("Higiene: %d (%.2f%%)\n", cat_doacoes[1], (cat_doacoes[1]*100.0)/totalDoacoes);
+        printf("Roupas: %d (%.2f%%)\n", cat_doacoes[2], (cat_doacoes[2]*100.0)/totalDoacoes);
+    }
+
+    fp = fopen("ARQ_VOLUNTARIOS.txt", "r");
+    int totalVol = 0, tot_disp[4] = {0}, total_func[5] = {0};
+    if (fp) {
+        while (fgets(linha, sizeof(linha), fp)) {
+            totalVol++;
+            if (strstr(linha, "Diariamente")) {
+			tot_disp[0]++;
+			}else if (strstr(linha, "Final de Semana")) {
+			tot_disp[1]++;
+			}else if (strstr(linha, "Dias Úteis")){
+			tot_disp[2]++;
+			}else if (strstr(linha, "Indefinido")) {
+			tot_disp[3]++;
+			}
+
+            if (strstr(linha, "Direção")) {
+			total_func[0]++;
+			}
+            if (strstr(linha, "Braçal")){
+			total_func[1]++;
+			}
+            if (strstr(linha, "Gestão")) {
+			total_func[2]++;
+			}
+            if (strstr(linha, "Atendimento")) {
+			total_func[3]++;
+			}
+            if (strstr(linha, "Comunicação")) {
+			total_func[4]++;
+			}
+        }
+        fclose(fp);
+    }
+
+    printf("\nVOLUNTÁRIOS:\n");
+    printf("Total de Voluntários: %d\n", totalVol);
+    if (totalVol > 0) {
+        printf("Funções:\n");
+        printf(" - Direção: %d (%.2f%%)\n", total_func[0], (total_func[0]*100.0)/totalVol);
+        printf(" - Braçal: %d (%.2f%%)\n", total_func[1], (total_func[1]*100.0)/totalVol);
+        printf(" - Gestão: %d (%.2f%%)\n", total_func[2], (total_func[2]*100.0)/totalVol);
+        printf(" - Atendimento: %d (%.2f%%)\n", total_func[3], (total_func[3]*100.0)/totalVol);
+        printf(" - Comunicação: %d (%.2f%%)\n", total_func[4], (total_func[4]*100.0)/totalVol);
+
+        printf("Disponibilidade:\n");
+        printf(" - Diariamente: %d (%.2f%%)\n", tot_disp[0], (tot_disp[0]*100.0)/totalVol);
+        printf(" - Final de Semana: %d (%.2f%%)\n", tot_disp[1], (tot_disp[1]*100.0)/totalVol);
+        printf(" - Dias Úteis: %d (%.2f%%)\n", tot_disp[2], (tot_disp[2]*100.0)/totalVol);
+        printf(" - Indefinido: %d (%.2f%%)\n", tot_disp[3], (tot_disp[3]*100.0)/totalVol);
+    }
+
+    fp = fopen("ARQ_NECESSIDADES.txt", "r");
+    int totalNec = 0, cat_nec[3] = {0};
+    if (fp) {
+        while (fgets(linha, sizeof(linha), fp)) {
+            totalNec++;
+            if (strstr(linha, "Categoria: C")) {
+			cat_nec[0]++;
+			}
+            else if (strstr(linha, "Categoria: H")) {
+			cat_nec[1]++;
+			}
+            else if (strstr(linha, "Categoria: R")) {
+			cat_nec[2]++;
+			}
+        }
+        fclose(fp);
+    }
+
+    printf("\nNECESSIDADES:\n");
+    printf("Total de Necessidades: %d\n", totalNec);
+    if (totalNec > 0) {
+        printf("Comida: %d (%.2f%%)\n", cat_nec[0], (cat_nec[0]*100.0)/totalNec);
+        printf("Higiene: %d (%.2f%%)\n", cat_nec[1], (cat_nec[1]*100.0)/totalNec);
+        printf("Roupas: %d (%.2f%%)\n", cat_nec[2], (cat_nec[2]*100.0)/totalNec);
+    }
+
+    printf("\nPressione ENTER para voltar ao menu...");
+    getchar(); getchar();
+}
